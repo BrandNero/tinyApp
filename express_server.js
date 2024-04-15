@@ -40,3 +40,7 @@ app.get("/hello", (req, res) => {
   const TemplateVars = { greeting: "Hello World!"};
   res.render("Hello World!", TemplateVars);
 });
+app.get("/urls/:id", (req, res) => {
+  const TemplateVars = { id: req.params.id, longURL:"http://localhost:8080/urls/b2xVn2"};
+  res.render("urls_shows", TemplateVars);
+});
