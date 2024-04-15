@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/BrandNero/tinyApp/issues"
   },
-  "homepage": "https://github.com/BrandNero/tinyApp#readme"
+  "homepage": "https://github.com/BrandNero/tinyApp#readme",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
 }
