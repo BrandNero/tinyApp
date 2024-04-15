@@ -32,14 +32,11 @@ app.get("/set", (req, res) => {
 app.get("/fetch", (req, res) => {
   res.send(`a = ${a}`);
 });
-app.get("/url", (req, res) => {
+app.get("/urls", (req, res) => {
   const TemplateVars = { urls: urlDatabase};
   res.render("urls_index", TemplateVars);
 });
-app.get("/hello", (req, res) => {
-  const TemplateVars = { greeting: "Hello World!"};
-  res.render("Hello World!", TemplateVars);
-});
+
 app.get("/urls/:id", (req, res) => {
   const TemplateVars = { id: req.params.id, longURL:"http://localhost:8080/urls/b2xVn2"};
   res.render("urls_shows", TemplateVars);
