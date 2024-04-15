@@ -50,7 +50,13 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_shows", TemplateVars);
 });
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  let longURL = urlDatabase[req.params.shortURL];
   console.log(longURL);
+  if (longURL.startsWith('http://')) {
+    longURL = 'https://' + longURL.slice(7);
+  } else if (!longURL.startsWith('https://')) {
+    longURL = 'https://' + longURL;
+  }
+
   res.redirect(longURL);
 });
