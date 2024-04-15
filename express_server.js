@@ -1,3 +1,4 @@
+const { Template } = require("ejs");
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
@@ -30,4 +31,12 @@ app.get("/set", (req, res) => {
 
 app.get("/fetch", (req, res) => {
   res.send(`a = ${a}`);
+});
+app.get("/url", (req, res) => {
+  const TemplateVars = { urls: urlDatabase};
+  res.render("urls_index", TemplateVars);
+});
+app.get("/hello", (req, res) => {
+  const TemplateVars = { greeting: "Hello World!"};
+  res.render("Hello World!", TemplateVars);
 });
