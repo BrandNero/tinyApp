@@ -31,8 +31,16 @@
       <tbody>
         <% for (let id in urls) { %>
           <tr>
-            <td><%= id %></td>
-            <td><%= urls[id] %></td>
+            <td>
+              <form method="get" action="/urls/<%= id %>">
+                <button type="submit" class="btn btn-outline-primary"><%= id %></button>
+                </form>
+              </td>
+            <td>
+              <form method="get" action="/u/<%= id %>">
+                <button type="submit" class="btn btn-outline-primary"><%= urls[id] %></button>
+                </form>
+              </td>
             <td>
               <form method="get" action="/urls/<%= id %>">
               <button type="submit" class="btn btn-outline-primary">Update URL</button>

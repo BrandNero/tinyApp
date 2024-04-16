@@ -62,6 +62,12 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls");
 });
 // updates the url
+app.post("/urls/:shortURL/update", (req, res) => {
+  const shortURL = req.params.shortURL;
+  const newURL = req.body.newURL;
+  urlDatabase[shortURL] = newURL;
+  res.redirect(`/urls`);
+});
 app.get("/u/:shortURL", (req, res) => {
   let longURL = urlDatabase[req.params.shortURL];
   console.log(longURL);
@@ -70,12 +76,5 @@ app.get("/u/:shortURL", (req, res) => {
   } else if (!longURL.startsWith('https://')) {
     longURL = 'https://' + longURL;
   }
-  app.post("/urls/:shortURL/update", (req, res) => {
-    const shortURL = req.params.shortURL;
-    const newURL = req.body.newURL;
-    urlDatabase[shortURL] = newURL;
-    res.redirect(`/urls`);
-  });
-
   res.redirect(longURL);
 });
