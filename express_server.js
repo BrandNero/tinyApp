@@ -41,7 +41,7 @@ app.get("/urls/new", (req, res) => {
 ///show the new created shorturl
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
-  res.render("urls_shows", templateVars);
+  res.render("urls_show", templateVars);
 });
 ///will show now in the urls page
 app.post("/urls", (req, res) => {
@@ -53,7 +53,7 @@ app.post("/urls", (req, res) => {
 ///shows the urls
 app.get("/urls/:id", (req, res) => {
   const TemplateVars = { id: req.params.id, longURL:urlDatabase[req.params.shortURL]};
-  res.render("urls_shows", TemplateVars);
+  res.render("urls_show", TemplateVars);
 });
 ///for deleting urls
 app.post("/urls/:shortURL/delete", (req, res) => {
@@ -62,12 +62,6 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls");
 });
 // updates the url
-app.post("/urls/:shortURL/update", (req, res) => {
-  const shortURL = req.params.shortURL;
-  const newURL = req.body.newURL;
-  urlDatabase[shortURL] = newURL;
-  res.redirect(`/urls`);
-});
 app.get("/u/:shortURL", (req, res) => {
   let longURL = urlDatabase[req.params.shortURL];
   console.log(longURL);
@@ -76,6 +70,12 @@ app.get("/u/:shortURL", (req, res) => {
   } else if (!longURL.startsWith('https://')) {
     longURL = 'https://' + longURL;
   }
+  app.post("/urls/:shortURL/update", (req, res) => {
+    const shortURL = req.params.shortURL;
+    const newURL = req.body.newURL;
+    urlDatabase[shortURL] = newURL;
+    res.redirect(`/urls`);
+  });
 
   res.redirect(longURL);
 });
