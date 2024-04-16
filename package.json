@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "./node_modules/.bin/nodemon -L express_server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -11,7 +12,7 @@
     "url": "git+https://github.com/BrandNero/tinyApp.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "Sergio Rodriguez, rodriguezruizsergio@gmail.com",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/BrandNero/tinyApp/issues"
@@ -19,6 +20,7 @@
   "homepage": "https://github.com/BrandNero/tinyApp#readme",
   "dependencies": {
     "ejs": "^3.1.10",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "nodemon": "^3.1.0"
   }
 }
