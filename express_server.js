@@ -92,4 +92,8 @@ app.get("/u/:shortURL", (req, res) => {
   }
   res.redirect(longURL);
 });
+app.post("/logout", (req, res) => {
+  res.clearCookie("username");
+  res.redirect("/urls");
+});
 
