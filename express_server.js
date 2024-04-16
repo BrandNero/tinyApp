@@ -20,11 +20,11 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com",
 };
 ///send you to the main page
-app.get("/", (req, res) => {
-  res.redirect("/urls");
-});
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
+});
+app.get("/", (req, res) => {
+  res.redirect("/urls");
 });
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
@@ -56,10 +56,17 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_shows", TemplateVars);
 });
 ///for deleting urls
-app.post('/urls/:shortURL/delete', (req, res) => {
+app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
   delete urlDatabase[shortURL];
-  res.redirect('/urls');
+  res.redirect("/urls");
+});
+// updates the url
+app.post("/urls/:shortURL/update", (req, res) => {
+  const shortURL = req.params.shortURL;
+  const newURL = req.body.newURL;
+  urlDatabase[shortURL] = newURL;
+  res.redirect(`/urls`);
 });
 app.get("/u/:shortURL", (req, res) => {
   let longURL = urlDatabase[req.params.shortURL];
