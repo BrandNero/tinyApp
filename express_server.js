@@ -45,6 +45,10 @@ app.get("/urls", (req, res) => {
   const TemplateVars = { urls: urlDatabase, username};
   res.render("urls_index", TemplateVars);
 });
+/// register page
+app.get("/register", (req, res) => {
+  res.render("register");
+});
 //for you to create urls
 app.get("/urls/new", (req, res) => {
   const username = {username: req.cookies['username']};
@@ -96,4 +100,3 @@ app.post("/logout", (req, res) => {
   res.clearCookie("username");
   res.redirect("/urls");
 });
-
