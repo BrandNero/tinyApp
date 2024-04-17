@@ -55,13 +55,25 @@ app.get("/urls", (req, res) => {
 app.get("/register", (req, res) => {
   res.render("register");
 });
+/////registering email and password to a newUser
 app.post("/register", (req, res) => {
-  const userID = generateRandomString();
   const newUser = {
     id: userID,
     email: req.body.email,
     password: req.body.password
   };
+  const userID = generateRandomString();
+  if (newUser.email === "" || newUser.password === "") {
+    res.sendStatus(400);
+  }
+  if (newUser.email) {
+    for (const user in users) {
+      if (users[user].email === newUser.email) {
+        res.sendStatus(400);
+        return;
+      }
+    }
+  }
   users[userID] = newUser;
   console.log("new User created", users);
   res.cookie("userID", newUser.id);
@@ -97,7 +109,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[shortURL];
   res.redirect("/urls");
 });
-// updates the url
+// updates the shorturl
 app.post("/urls/:shortURL/update", (req, res) => {
   const shortURL = req.params.shortURL;
   const newURL = req.body.newURL;
