@@ -1,7 +1,6 @@
-const { Template } = require("ejs");
 const express = require("express");
 const cookieParser = require("cookie-parser");
-
+const {generateRandomString, addUser, checkRegistration, checkPassword} = require("./functions");
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -21,40 +20,11 @@ const users = {
   }
 };
 
-const generateRandomString = function() {
-  let randomString = "";
-  for (let i = 0; i < 6; i++) {
-    const randomCharCode = Math.floor(Math.random() * 26 + 97);
-    const randomChar = String.fromCharCode(randomCharCode);
-    randomString += randomChar;
-  }
-  return randomString;
-};
+
 const findUserByEmail = function(email) {
   return Object.values(users).find(user => user.email === email);
 };
-const checkRegistration = (email, password) => {
-  if (email === "" || password === "") {
-    return false;
-  }
-  return true;
-};
-const addUser = function(email, password) {
-  const userID = generateRandomString();
-  const newUser = {
-    id: userID,
-    email,
-    password,
-  };
-  return newUser;
-};
-const checkPassword = (user, password) => {
-  if (user.password === password) {
-    return true;
-  } else {
-    return false;
-  }
-};
+
 ///send you to the main page
 app.get("/", (req, res) => {
   res.redirect("/urls");
@@ -101,7 +71,7 @@ app.get("/login", (req, res) => {
   res.render("login", templateVars);
 });
 app.post("/login", (req, res) => {
-  const {email, password} = req.body;
+  const { email, password } = req.body;
   const user = findUserByEmail(email);
   if (!user) {
     res.status(403).send("Email cannot be found");
@@ -117,8 +87,12 @@ app.post("/login", (req, res) => {
 });
 //for you to create urls
 app.get("/urls/new", (req, res) => {
-  const userID = {userID: req.cookies['userID']};
-  res.render("urls_new", userID);
+  const userID = req.cookies['userID'];
+  if (!userID) {
+    res.redirect("/login");
+    return;
+  }
+  res.render("urls_new", { userID });
 });
 ///show the new created shorturl
 app.get("/urls/:shortURL", (req, res) => {
@@ -136,8 +110,14 @@ app.post("/urls", (req, res) => {
 ///shows the urls
 app.get("/urls/:id", (req, res) => {
   const userID = req.cookies['userID'];
-  const TemplateVars = { id: req.params.id, longURL:urlDatabase[req.params.shortURL], userID};
-  res.render("urls_show", TemplateVars);
+  const shortURL = req.params.id;
+  const longURL = urlDatabase[shortURL];
+  if (!longURL) {
+    res.status(404).send("Short URL not found");
+    return;
+  }
+  const templateVars = { shortURL, longURL, userID };
+  res.render("urls_show", templateVars);
 });
 ///for deleting urls
 app.post("/urls/:shortURL/delete", (req, res) => {
