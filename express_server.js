@@ -145,15 +145,51 @@ app.get("/urls/:id", (req, res) => {
 });
 ///for deleting urls
 app.post("/urls/:shortURL/delete", (req, res) => {
+  const userID = req.cookies['userID'];
   const shortURL = req.params.shortURL;
+  const urlEntry = urlDatabase[shortURL];
+  
+  if (!userID) {
+    res.status(403).send("Please login to delete this URL");
+    return;
+  }
+  
+  if (!urlEntry) {
+    res.status(404).send("URL not found");
+    return;
+  }
+  
+  if (urlEntry.userID !== userID) {
+    res.status(403).send("You don't have permission to delete this URL");
+    return;
+  }
+  
   delete urlDatabase[shortURL];
   res.redirect("/urls");
 });
 // updates the shorturl
 app.post("/urls/:shortURL/update", (req, res) => {
+  const userID = req.cookies['userID'];
   const shortURL = req.params.shortURL;
   const newURL = req.body.newURL;
-  urlDatabase[shortURL] = newURL;
+  const urlEntry = urlDatabase[shortURL];
+  
+  if (!userID) {
+    res.status(403).send("Please login to update this URL");
+    return;
+  }
+  
+  if (!urlEntry) {
+    res.status(404).send("URL not found");
+    return;
+  }
+  
+  if (urlEntry.userID !== userID) {
+    res.status(403).send("You don't have permission to update this URL");
+    return;
+  }
+  
+  urlEntry.longURL = newURL;
   res.redirect(`/urls`);
 });
 /// cookies
