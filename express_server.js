@@ -1,6 +1,7 @@
 const { Template } = require("ejs");
 const express = require("express");
 const cookieParser = require("cookie-parser");
+
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -8,6 +9,17 @@ app.set("view engine", "ejs");
 
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+const urlDatabase = {
+  b2xVn2: "http://www.lighthouselabs.ca",
+  "9sm5xK": "http://www.google.com",
+};
+const users = {
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "monkey123"
+  }
+};
 
 const generateRandomString = function() {
   let randomString = "";
@@ -18,16 +30,23 @@ const generateRandomString = function() {
   }
   return randomString;
 };
-const users = {
-  userRandomId:{
-    id: "userrandom",
-    email: "user@example.com",
-    password: "giant-monkey123"
-  }
+const findUserByEmail = function(email) {
+  return Object.values(users).find(user => user.email === email);
 };
-const urlDatabase = {
-  b2xVn2: "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com",
+const checkRegistration = (email, password) => {
+  if (email === "" || password === "") {
+    return false;
+  }
+  return true;
+};
+const addUser = function(email, password) {
+  const userID = generateRandomString();
+  const newUser = {
+    id: userID,
+    email: email,
+    password: password
+  };
+  return newUser.id;
 };
 ///send you to the main page
 app.listen(PORT, () => {
@@ -57,26 +76,29 @@ app.get("/register", (req, res) => {
 });
 /////registering email and password to a newUser
 app.post("/register", (req, res) => {
-  const newUser = {
-    id: userID,
-    email: req.body.email,
-    password: req.body.password
+  const email = req.body.email;
+  const password = req.body.password;
+
+  if (!checkRegistration(email, password)) {
+    res.status(400).send("Invalid email or password");
+    return;
+  }
+  if (findUserByEmail(email)) {
+    res.status(400).send("Email already in use");
+    return;
+  }
+
+  const userInfo = {
+    email: email,
+    password: password
   };
-  const userID = generateRandomString();
-  if (newUser.email === "" || newUser.password === "") {
-    res.sendStatus(400);
-  }
-  if (newUser.email) {
-    for (const user in users) {
-      if (users[user].email === newUser.email) {
-        res.sendStatus(400);
-        return;
-      }
-    }
-  }
-  users[userID] = newUser;
-  console.log("new User created", users);
-  res.cookie("userID", newUser.id);
+  const newUser = addUser(userInfo);
+
+  // Assuming users is your user database
+  users[newUser.id] = newUser;
+
+  console.log("new User created", newUser);
+  res.cookie("userID", newUser);
   res.redirect(`/urls`);
 });
 //for you to create urls
