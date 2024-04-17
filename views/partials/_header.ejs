@@ -23,8 +23,10 @@
               <button type="submit" class="btn-outline-danger">logout</button>
             </form>
           <% } else { %>
-            <form method="post" action="/login">
-              <input type="text" name="userID" placeholder="userID">
+            <form method="get" action="/register">
+              <button type="submit" class="btn">register</button>
+            </form>
+            <form method="get" action="/login">
               <button type="submit" class="btn">login</button>
             </form>
           <% } %>

@@ -42,9 +42,18 @@ const checkRegistration = (email, password) => {
 const addUser = function(email, password) {
   const userID = generateRandomString();
   const newUser = {
-    id: userID
+    id: userID,
+    email,
+    password,
   };
-  return newUser.id;
+  return newUser;
+};
+const checkPassword = (user, password) => {
+  if (user.password === password) {
+    return true;
+  } else {
+    return false;
+  }
 };
 ///send you to the main page
 app.listen(PORT, () => {
@@ -72,6 +81,9 @@ app.get("/urls", (req, res) => {
 app.get("/register", (req, res) => {
   res.render("register");
 });
+app.get("/login", (req, res) => {
+  res.render("login");
+});
 /////registering email and password to a newUser
 app.post("/register", (req, res) => {
   const email = req.body.email;
@@ -86,13 +98,7 @@ app.post("/register", (req, res) => {
     return;
   }
 
-  const userInfo = {
-    email: email,
-    password: password
-  };
-  const newUser = addUser(userInfo);
-
-  // Assuming users is your user database
+  const newUser = addUser(req.body.email, req.body.password);
   users[newUser.id] = newUser;
 
   console.log("new User created", newUser);
@@ -115,7 +121,7 @@ app.post("/urls", (req, res) => {
   console.log(req.body);
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
-  res.send(res.redirect(`urls/${shortURL}`));
+  res.redirect(`urls/${shortURL}`);
 });
 ///shows the urls
 app.get("/urls/:id", (req, res) => {
@@ -136,6 +142,7 @@ app.post("/urls/:shortURL/update", (req, res) => {
   urlDatabase[shortURL] = newURL;
   res.redirect(`/urls`);
 });
+/// sends you to the longURL
 app.get("/u/:shortURL", (req, res) => {
   let longURL = urlDatabase[req.params.shortURL];
   console.log(longURL);
@@ -145,6 +152,17 @@ app.get("/u/:shortURL", (req, res) => {
     longURL = 'https://' + longURL;
   }
   res.redirect(longURL);
+});
+app.get("/login", (req, res) => {
+  const { email, password } = req.body;
+  const user = findUserByEmail(email);
+  if (!user) {
+    res.status(403).send("Email cannot be found");
+  } else if (!checkPassword(user, password))  {
+    res.status(403).send("Wrong password");
+  }
+  res.cookie('user_id', user.id);
+  res.redirect("/urls");
 });
 app.post("/logout", (req, res) => {
   res.clearCookie("userID");
