@@ -108,13 +108,20 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const userID = req.cookies['userID'];
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL];
+  const urlEntry = urlDatabase[shortURL];
+  
   if (!userID) {
     res.send("Please login to view this page");
     res.redirect("/login");
     return;
   }
-  const templateVars = { shortURL, longURL, userID };
+  
+  if (!urlEntry) {
+    res.status(404).send("URL not found");
+    return;
+  }
+  
+  const templateVars = { shortURL, longURL: urlEntry.longURL, userID };
   res.render("urls_show", templateVars);
 });
 ///will show now in the urls page
@@ -132,13 +139,13 @@ app.get("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
   const longURL = urlDatabase[shortURL];
   if (!userID) {
-    return res.render("error", { errorMessage: "Error:log in to see URLs", userID: null });
+    return res.status(403).send("Please login to see this URL");
   }
   if (!longURL) {
-    return res.render("error", { errorMessage: "Error: URL not found", userID });
+    return res.status(403).send("Error: URL not found");
   }
   if (longURL.userID !== userID) {
-    return res.render("error", { errorMessage: "Error: You don't own this URL", userID });
+    return res.status(403).send("Error: You don't own this URL");
   }
   const templateVars = { shortURL, longURL, userID };
   res.render("urls_show", templateVars);
