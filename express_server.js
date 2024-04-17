@@ -42,9 +42,7 @@ const checkRegistration = (email, password) => {
 const addUser = function(email, password) {
   const userID = generateRandomString();
   const newUser = {
-    id: userID,
-    email: email,
-    password: password
+    id: userID
   };
   return newUser.id;
 };
@@ -98,7 +96,7 @@ app.post("/register", (req, res) => {
   users[newUser.id] = newUser;
 
   console.log("new User created", newUser);
-  res.cookie("userID", newUser);
+  res.cookie("userID", newUser.id);
   res.redirect(`/urls`);
 });
 //for you to create urls
