@@ -9,8 +9,14 @@ app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 const urlDatabase = {
-  b2xVn2: "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com",
+  b6UTxQ: {
+    longURL: "https://www.minecraft.com",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  },
 };
 const users = {
   "userRandomID": {
@@ -35,8 +41,12 @@ app.get("/urls.json", (req, res) => {
 //shows the urls
 app.get("/urls", (req, res) => {
   const userID = req.cookies['userID'];
-  const TemplateVars = { urls: urlDatabase, userID};
-  res.render("urls_index", TemplateVars);
+  if (!userID) {
+    res.redirect("/login");
+    return;
+  }
+  const templateVars = { urls: urlDatabase, userID };
+  res.render("urls_index", templateVars);
 });
 /// register page
 app.get("/register", (req, res) => {
@@ -97,24 +107,38 @@ app.get("/urls/new", (req, res) => {
 ///show the new created shorturl
 app.get("/urls/:shortURL", (req, res) => {
   const userID = req.cookies['userID'];
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], userID };
+  const shortURL = req.params.shortURL;
+  const longURL = urlDatabase[shortURL];
+  if (!userID) {
+    res.send("Please login to view this page");
+    res.redirect("/login");
+    return;
+  }
+  const templateVars = { shortURL, longURL, userID };
   res.render("urls_show", templateVars);
 });
 ///will show now in the urls page
 app.post("/urls", (req, res) => {
   console.log(req.body);
   const shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
-  res.redirect(`urls/${shortURL}`);
+  const longURL = req.body.longURL;
+  urlDatabase[shortURL] = { longURL, userID: req.cookies.userID };
+  console.log("Long URL:", longURL);
+  res.redirect(`/urls/${shortURL}`);
 });
 ///shows the urls
 app.get("/urls/:id", (req, res) => {
   const userID = req.cookies['userID'];
   const shortURL = req.params.id;
   const longURL = urlDatabase[shortURL];
+  if (!userID) {
+    return res.render("error", { errorMessage: "Error:log in to see URLs", userID: null });
+  }
   if (!longURL) {
-    res.status(404).send("Short URL not found");
-    return;
+    return res.render("error", { errorMessage: "Error: URL not found", userID });
+  }
+  if (longURL.userID !== userID) {
+    return res.render("error", { errorMessage: "Error: You don't own this URL", userID });
   }
   const templateVars = { shortURL, longURL, userID };
   res.render("urls_show", templateVars);
@@ -140,8 +164,13 @@ app.post("/login", (req, res) => {
 });
 /// sends you to the longURL
 app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL];
-  console.log(longURL);
+  const shortURL = req.params.shortURL;
+  const urlEntry = urlDatabase[shortURL];
+  if (!urlEntry) {
+    res.status(404).send("Short URL not found");
+    return;
+  }
+  let longURL = urlEntry.longURL;
   if (longURL.startsWith('http://')) {
     longURL = 'https://' + longURL.slice(7);
   }
