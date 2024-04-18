@@ -1,28 +1,16 @@
 const express = require("express");
 const cookieSession = require("cookie-session");
+const {users, urlDatabase} = require("./data/database");
 const {generateRandomString, addUser, checkRegistration, findUserByEmail} = require("./functions");
-const users = require("./data/database");
 const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 8080; // default port 8080
  
 app.set("view engine", "ejs");
-
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieSession({
   keys: ["key1", "key2"]
 }));
-const urlDatabase = {
-  b6UTxQ: {
-    longURL: "https://www.minecraft.com",
-    userID: "aJ48lW",
-  },
-  i3BoGr: {
-    longURL: "https://www.google.ca",
-    userID: "aJ48lW",
-  },
-};
-
 ///send you to the main page
 app.get("/", (req, res) => {
   res.redirect("/urls");
@@ -51,9 +39,7 @@ app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   const hashedPassword = bcrypt.hashSync(password);
-  
   const user = Object.values(users);
-
   if (!checkRegistration(email, hashedPassword)) {
     res.status(400).send("Invalid email or password");
     return;
@@ -65,7 +51,6 @@ app.post("/register", (req, res) => {
 
   const newUser = addUser(req.body.email, hashedPassword);
   users[newUser.id] = newUser;
-
   req.session.userID = newUser.id;
   res.redirect(`/urls`);
 });
@@ -80,11 +65,12 @@ app.post("/login", (req, res) => {
   const uservalue = Object.values(users);
   const user = findUserByEmail(email, uservalue);
   if (!user) {
-    res.status(403).send("Email cannot be found");
+    res.status(400).send("Invalid email");
     return;
   }
+  console.log(user.password);
   if (!bcrypt.compareSync(password, user.password)) {
-    res.status(403).send("Wrong password");
+    res.status(400).send("Invalid password");
     return;
   }
   req.session.userID = user.id;
@@ -104,18 +90,15 @@ app.get("/urls/:shortURL", (req, res) => {
   const userID = req.session.userID;
   const shortURL = req.params.shortURL;
   const urlEntry = urlDatabase[shortURL];
-  
   if (!userID) {
     res.send("Please login to view this page");
     res.redirect("/login");
     return;
   }
-  
   if (!urlEntry) {
     res.status(404).send("URL not found");
     return;
   }
-  
   const templateVars = { shortURL, longURL: urlEntry.longURL, userID };
   res.render("urls_show", templateVars);
 });
@@ -123,7 +106,8 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
   const longURL = req.body.longURL;
-  urlDatabase[shortURL] = { longURL, userID: req.cookies.userID };
+  const userID = req.session.userID;
+  urlDatabase[shortURL] = { longURL, userID };
   res.redirect(`/urls/${shortURL}`);
 });
 ///shows the urls
@@ -148,22 +132,18 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   const userID = req.session.userID;
   const shortURL = req.params.shortURL;
   const urlEntry = urlDatabase[shortURL];
-  
   if (!userID) {
     res.status(403).send("Please login to delete this URL");
     return;
   }
-  
   if (!urlEntry) {
     res.status(404).send("URL not found");
     return;
   }
-  
   if (urlEntry.userID !== userID) {
     res.status(403).send("You don't have permission to delete this URL");
     return;
   }
-  
   delete urlDatabase[shortURL];
   res.redirect("/urls");
 });
@@ -173,22 +153,18 @@ app.post("/urls/:shortURL/update", (req, res) => {
   const shortURL = req.params.shortURL;
   const newURL = req.body.newURL;
   const urlEntry = urlDatabase[shortURL];
-  
   if (!userID) {
     res.status(403).send("Please login to update this URL");
     return;
   }
-  
   if (!urlEntry) {
     res.status(404).send("URL not found");
     return;
   }
-  
   if (urlEntry.userID !== userID) {
     res.status(403).send("You don't have permission to update this URL");
     return;
   }
-  
   urlEntry.longURL = newURL;
   res.redirect(`/urls`);
 });
