@@ -1,6 +1,7 @@
 const express = require("express");
 const cookieSession = require("cookie-session");
-const {generateRandomString, addUser, checkRegistration} = require("./functions");
+const {generateRandomString, addUser, checkRegistration, findUserByEmail} = require("./functions");
+const users = require("./data/database");
 const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 8080; // default port 8080
@@ -20,18 +21,6 @@ const urlDatabase = {
     longURL: "https://www.google.ca",
     userID: "aJ48lW",
   },
-};
-const users = {
-  "userRandomID": {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: bcrypt.hashSync("monkey123")
-  }
-};
-
-
-const findUserByEmail = function(email) {
-  return Object.values(users).find(user => user.email === email);
 };
 
 ///send you to the main page
@@ -63,15 +52,17 @@ app.post("/register", (req, res) => {
   const password = req.body.password;
   const hashedPassword = bcrypt.hashSync(password);
   
+  const user = Object.values(users);
+
   if (!checkRegistration(email, hashedPassword)) {
     res.status(400).send("Invalid email or password");
     return;
   }
-  if (findUserByEmail(email)) {
+  if (findUserByEmail(email, user)) {
     res.status(400).send("Email already in use");
     return;
   }
-  
+
   const newUser = addUser(req.body.email, hashedPassword);
   users[newUser.id] = newUser;
 
@@ -86,7 +77,8 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const user = findUserByEmail(email);
+  const uservalue = Object.values(users);
+  const user = findUserByEmail(email, uservalue);
   if (!user) {
     res.status(403).send("Email cannot be found");
     return;

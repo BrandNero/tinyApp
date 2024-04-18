@@ -29,4 +29,13 @@ const checkPassword = (user, password) => {
     return false;
   }
 };
-module.exports = {generateRandomString, checkRegistration, addUser, checkPassword};
+const findUserByEmail = function(email, users) {
+  for (const userID in users) {
+    const user = users[userID];
+    if (user.email === email) {
+      return userID;
+    }
+    return undefined;
+  }
+};
+module.exports = {generateRandomString, checkRegistration, addUser, checkPassword, findUserByEmail};
