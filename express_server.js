@@ -1,19 +1,21 @@
 const express = require("express");
 const cookieSession = require("cookie-session");
 const {users, urlDatabase} = require("./data/database");
-const {generateRandomString, addUser, checkRegistration, findUserByEmail} = require("./functions");
+const {generateRandomString, addUser, checkRegistration, findUserByEmail} = require("./helpers");
 const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 8080; // default port 8080
  
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(cookieSession({
+  name: "session",
   keys: ["key1", "key2"]
 }));
 ///send you to the main page
 app.get("/", (req, res) => {
-  res.redirect("/urls");
+  res.redirect(302, "/login");
 });
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
@@ -41,11 +43,11 @@ app.post("/register", (req, res) => {
   const hashedPassword = bcrypt.hashSync(password);
   const user = Object.values(users);
   if (!checkRegistration(email, hashedPassword)) {
-    res.status(400).send("Invalid email or password");
+    res.status(403).send("Invalid email or password");
     return;
   }
   if (findUserByEmail(email, user)) {
-    res.status(400).send("Email already in use");
+    res.status(403).send("Email already in use");
     return;
   }
 
@@ -65,22 +67,21 @@ app.post("/login", (req, res) => {
   const uservalue = Object.values(users);
   const user = findUserByEmail(email, uservalue);
   if (!user) {
-    res.status(400).send("Invalid email");
+    res.status(403).send("Invalid email");
     return;
   }
-  console.log(user.password);
   if (!bcrypt.compareSync(password, user.password)) {
-    res.status(400).send("Invalid password");
+    res.status(403).send("Invalid password");
     return;
   }
   req.session.userID = user.id;
-  res.redirect("/urls");
+  res.redirect(200, "/urls");
 });
 //for you to create urls
 app.get("/urls/new", (req, res) => {
   const userID = req.session.userID;
   if (!userID) {
-    res.redirect("/login");
+    res.redirect(302, "/login");
     return;
   }
   res.render("urls_new", { userID });
@@ -91,8 +92,8 @@ app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const urlEntry = urlDatabase[shortURL];
   if (!userID) {
-    res.send("Please login to view this page");
-    res.redirect("/login");
+    res.send(200 ,"Please login to view this page");
+    res.redirect(200, "/login");
     return;
   }
   if (!urlEntry) {
@@ -107,24 +108,27 @@ app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
   const longURL = req.body.longURL;
   const userID = req.session.userID;
-  urlDatabase[shortURL] = { longURL, userID };
+  urlDatabase[shortURL] = { longURL, userID: userID };
   res.redirect(`/urls/${shortURL}`);
 });
 ///shows the urls
 app.get("/urls/:id", (req, res) => {
   const userID = req.session.userID;
   const shortURL = req.params.id;
-  const longURL = urlDatabase[shortURL];
+  const urlEntry = urlDatabase[shortURL];
   if (!userID) {
-    return res.status(403).send("Please login to see this URL");
+    res.status(403).send("Please login to delete this URL");
+    return;
   }
-  if (!longURL) {
-    return res.status(403).send("Error: URL not found");
+  if (!urlEntry) {
+    res.status(404).send("URL not found");
+    return;
   }
-  if (longURL.userID !== userID) {
-    return res.status(403).send("Error: You don't own this URL");
+  if (urlEntry.userID !== userID) {
+    res.status(403).send("You don't have permission to delete this URL");
+    return;
   }
-  const templateVars = { shortURL, longURL, userID };
+  const templateVars = { shortURL, longURL: urlEntry.longURL, userID };
   res.render("urls_show", templateVars);
 });
 ///for deleting urls
@@ -132,6 +136,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   const userID = req.session.userID;
   const shortURL = req.params.shortURL;
   const urlEntry = urlDatabase[shortURL];
+  console.log(urlEntry);
   if (!userID) {
     res.status(403).send("Please login to delete this URL");
     return;
@@ -179,7 +184,7 @@ app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const urlEntry = urlDatabase[shortURL];
   if (!urlEntry) {
-    res.status(404).send("Short URL not found");
+    res.status(200).send("Short URL not found");
     return;
   }
   let longURL = urlEntry.longURL;
