@@ -32,12 +32,12 @@
         <% for (let id in urls) { %>
           <tr>
             <td>
-              <form method="get" action="/urls/<%= id %>">
-                <button type="submit" class="btn"><%= id %></button>
+              <form method="get" action="/u/<%= urls[id].shortURL %>">
+                <button type="submit" class="btn"><%= urls[id].shortURL %></button>
                 </form>
               </td>
             <td>
-              <form method="get" action="/u/<%= id %>">
+              <form method="get" action="/u/<%= urls[id].shortURL %>">
                 <button type="submit" class="btn"><%= urls[id].longURL %></button>
                 </form>
               </td>
