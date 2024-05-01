@@ -42,13 +42,13 @@
                 </form>
               </td>
             <td>
-              <form method="get" action="/urls/<%= id %>">
+                <form method="get" action="/urls/<%= urls[id].shortURL %>">
               <button type="submit" class="btn btn-outline-primary">Update URL</button>
               </form>
             </td>
             </td>
             <td>
-              <form method="POST" action="/urls/<%= id %>/delete" value="Delete">
+              <form method="POST" action="/urls/<%= urls[id].shortURL %>/delete" value="Delete">
                 <button type="submit" class="btn btn-outline-danger">Delete</button>
               </form>
               </form>

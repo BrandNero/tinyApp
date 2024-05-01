@@ -16,7 +16,7 @@ app.use(cookieSession({
 
 ///send you to the main page
 app.get("/", (req, res) => {
-  res.redirect(302, "/login");
+  res.redirect(302, "/urls");
 });
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
@@ -26,7 +26,7 @@ app.get("/urls.json", (req, res) => {
 app.get("/urls", (req, res) => {
   const userID = req.session.userID;
   if (!userID) {
-    res.redirect(302, "/login");
+    res.status(401).send("<h1>Error: please <a href='/login'>login</a> to view website</h1>");
     return;
   }
   const userUrls = Object.values(urlDatabase).filter(url => url.userID === userID);
